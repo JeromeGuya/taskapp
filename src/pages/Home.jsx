@@ -1,16 +1,17 @@
 import { ToastContainer, toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa";
+import { api } from "../lib/api";
 
 export default function Home() {
   const [tasks, setTasks] = useState([]);
+  const [error, setError] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/api/tasks");
-        const data = await res.json();
-        setTasks(data.data);
+        const res = await api.getTask();
+        setTasks(res.data);
       } catch (error) {
         console.error(error);
       }
@@ -21,24 +22,15 @@ export default function Home() {
 
   const handleDone = async (id) => {
     try {
-      const res = await fetch(`/api/api/tasks/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ task_status: "Completed" }),
-      });
-      if (!res.ok) {
-        throw new Error("Something went wrong");
+      const res = await api.updateTask(id, { task_status: "Completed" });
+      if (res.error) {
+        setError(res.error);
+        toast.error("Cannot update task");
       }
-
-      const data = await res.json();
 
       setTasks((prevTask) =>
         prevTask.map((task) =>
-          task.id === id
-            ? { ...task, task_status: data.data.task_status }
-            : task
+          task.id === id ? { ...task, task_status: res.data.task_status } : task
         )
       );
       toast.success(`Task updated successfully`);
@@ -49,26 +41,14 @@ export default function Home() {
 
   const handleRevert = async (id) => {
     try {
-      const res = await fetch(`/api/api/tasks/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ task_status: "Pending" }),
-      });
-      if (!res.ok) {
-        throw new Error("Something went wrong");
-      }
-
-      const data = await res.json();
+      const res = await api.updateTask(id, { task_status: "Pending" });
 
       setTasks((prevTask) =>
         prevTask.map((task) =>
-          task.id === id
-            ? { ...task, task_status: data.data.task_status }
-            : task
+          task.id === id ? { ...task, task_status: res.data.task_status } : task
         )
       );
+
       toast.success(`Task reverted successfully`);
     } catch (error) {
       toast.error("Something went wrong");
@@ -77,16 +57,15 @@ export default function Home() {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch(`/api/api/tasks/${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        throw new Error("Something went wrong");
+      const res = await api.deleteTask(id);
+      if (res.error) {
+        setError(res.error);
+        toast.error("Cannot delete task");
       }
 
-      setTasks((prevTask) => prevTask.filter((task) => task.id !== id));
       toast.success(`Task deleted successfully`);
-    } catch (error) {
+      setTasks((prevTask) => prevTask.filter((task) => task.id !== id));
+    } catch {
       toast.error("Something went wrong");
     }
   };

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../lib/api";
 
 export default function CreateTask() {
   const [forms, setForms] = useState({
@@ -17,29 +18,16 @@ export default function CreateTask() {
     console.log(forms);
 
     try {
-      const res = await fetch("/api/api/tasks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(forms),
-      });
-
-      const data = await res.json();
-
-      if (data.error) {
-        setError(data.error);
-      } else {
-        toast.success("Task created successfully");
-        setForms({
-          task_name: "",
-          task_description: "",
-        });
-
-        navigate("/");
+      const res = await api.createTask(forms);
+      if (res.error) {
+        setError(res.error);
       }
+
+      toast.success("Task created successfully");
+      navigate("/");
     } catch (error) {
-      console.log(`Error: ${error}`);
+      console.error(error);
+      setError({ task_name: "Task name is required" });
     }
   };
 
