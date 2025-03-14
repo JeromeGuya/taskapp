@@ -1,11 +1,14 @@
-import { ToastContainer, toast } from "react-toastify";
+import { Toaster, toast } from "sonner";
 import { useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import { api } from "../lib/api";
+import { Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 export default function Home() {
   const [tasks, setTasks] = useState([]);
   const [error, setError] = useState({});
+  const { id } = useParams();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,7 +75,7 @@ export default function Home() {
 
   return (
     <>
-      <ToastContainer />
+      <Toaster />
       <h1 className="title">All Task</h1>
       {tasks.length > 0 ? (
         tasks.map((task) => (
@@ -112,6 +115,7 @@ export default function Home() {
                   : "bg-gray-500 cursor-not-allowed mt-2 p-2 text-white rounded-lg"
               }`}
               onClick={() => handleDone(task.id)}
+              disabled={task.task_status === "Completed"}
             >
               Mark as done
             </button>
@@ -122,9 +126,25 @@ export default function Home() {
                   : "bg-gray-500 cursor-not-allowed mt-2 ml-2 p-2 text-white rounded-lg"
               }`}
               onClick={() => handleRevert(task.id)}
+              disabled={task.task_status === "Pending"}
             >
               Revert
             </button>
+            <Link
+              to={task.task_status !== "Completed" ? `/edit/${task.id}` : "#"}
+              className={`mt-2 p-2 rounded-lg ml-2 ${
+                task.task_status !== "Completed"
+                  ? "bg-yellow-500 text-white hover:bg-yellow-600" // Enabled style
+                  : "bg-gray-500 text-gray-300 cursor-not-allowed" // Disabled style
+              }`}
+              onClick={(e) => {
+                if (task.task_status === "Completed") {
+                  e.preventDefault();
+                }
+              }}
+            >
+              Edit Task
+            </Link>
           </div>
         ))
       ) : (

@@ -9,4 +9,6 @@ export const api = {
     ky.put(`${API_BASE_URL}/tasks/${id}`, { json: task }).json(),
   showTask: (id) => ky.get(`${API_BASE_URL}/tasks/${id}`).json(),
   deleteTask: (id) => ky.delete(`${API_BASE_URL}/tasks/${id}`).json(),
+  updateInfoTask: (id, task) =>
+    ky.put(`${API_BASE_URL}/edit-tasks/${id}`, { json: task }).json(),
 };
